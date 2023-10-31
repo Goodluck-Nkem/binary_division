@@ -55,7 +55,7 @@ struct DIV_RESULT binary_div(int dividend, int divisor)
         return res;
     if (divisor > dividend)
     {
-        res.remainder = dividend;
+        res.remainder = dividend * remainder_sign;
         return res;
     }
 
