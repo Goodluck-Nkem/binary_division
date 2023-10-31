@@ -39,8 +39,14 @@ struct DIV_RESULT binary_div(uint32_t dividend, uint32_t divisor)
     uint32_t temp_divisor = divisor;
     uint32_t temp_dividend = dividend;
     uint32_t new_dividend;
-    if (!divisor || divisor > dividend)
-        return res;
+	
+	if(!divisor)
+		return res;
+	if(divisor > dividend)
+	{
+		res.remainder = dividend;
+		return res;
+	}
 
     while ((temp_divisor & MSB_MASK) == 0)
     {
