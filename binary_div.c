@@ -2,51 +2,62 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define MSB_NUMBER ((sizeof(uint32_t) * 8) - 1)
+#define MSB_NUMBER ((sizeof(int) * 8) - 1)
 #define MSB_MASK (1 << MSB_NUMBER)
 
 struct DIV_RESULT
 {
-    uint32_t quotient, remainder;
+    int quotient, remainder;
 };
 
-struct DIV_RESULT binary_div(uint32_t dividend, uint32_t divisor);
+struct DIV_RESULT binary_div(int dividend, int divisor);
 
 int main()
 {
-    uint32_t dividend, divisor;
+    int dividend, divisor;
     puts("Enter zero for divisor to end program, For example, Operation: 15/0");
 
     while (1)
     {
         printf("Operation: ");
-        scanf("%u / %u", &dividend, &divisor);
+        scanf("%i / %i", &dividend, &divisor);
         if (!divisor)
             break;
         struct DIV_RESULT div = binary_div(dividend, divisor);
-        printf("Quotient = %u\nRemainder = %u\n", div.quotient, div.remainder);
+        printf("Quotient = %i\nRemainder = %i\n", div.quotient, div.remainder);
+        /* confirm dividend = (divisor * quotient) + remainder */
     }
 
     puts("Exit success!");
     return 0;
 }
 
-struct DIV_RESULT binary_div(uint32_t dividend, uint32_t divisor)
+struct DIV_RESULT binary_div(int dividend, int divisor)
 {
+    /* store resulting signs, then convert all to unsigned */
+    int quotient_sign = (divisor < 0 ^ dividend < 0) ? -1 : 1, remainder_sign = 1;
+    if (divisor < 0)
+        divisor *= -1;
+    if (dividend < 0)
+    {
+        remainder_sign = -1;
+        dividend *= -1;
+    }
+
     struct DIV_RESULT res = {0, 0};
-    uint32_t quotient = 0;
-    uint32_t dividend_shift, divisor_msb = MSB_NUMBER, dividend_msb = MSB_NUMBER; // starting from MSB
-    uint32_t temp_divisor = divisor;
-    uint32_t temp_dividend = dividend;
-    uint32_t new_dividend;
-	
-	if(!divisor)
-		return res;
-	if(divisor > dividend)
-	{
-		res.remainder = dividend;
-		return res;
-	}
+    int quotient = 0;
+    int dividend_shift, divisor_msb = MSB_NUMBER, dividend_msb = MSB_NUMBER; // starting from MSB
+    int temp_divisor = divisor;
+    int temp_dividend = dividend;
+    int new_dividend;
+
+    if (!divisor)
+        return res;
+    if (divisor > dividend)
+    {
+        res.remainder = dividend;
+        return res;
+    }
 
     while ((temp_divisor & MSB_MASK) == 0)
     {
@@ -82,7 +93,7 @@ struct DIV_RESULT binary_div(uint32_t dividend, uint32_t divisor)
     }
 
     // we have our quotient, then new_dividend is our remainder
-    res.quotient = quotient;
-    res.remainder = new_dividend;
+    res.quotient = quotient * quotient_sign;
+    res.remainder = new_dividend * remainder_sign;
     return res;
 }
