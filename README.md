@@ -1,5 +1,6 @@
 # binary_division
 This project performs an integer division without using the division operator.
+Recent commits support signed integers.
 
 This code up to this moment is implemented only in C.
 It uses the binary division algorithm directly, without much trickery.

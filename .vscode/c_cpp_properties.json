@@ -1,11 +1,11 @@
 {
     "configurations": [
         {
-            "name": "Windows",
+            "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**"
             ],
-            "compilerPath": "C:/msys64/mingw64/bin/gcc.exe"
+            "compilerPath": "/usr/bin/gcc"
         }
     ],
     "version": 4

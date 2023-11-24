@@ -20,8 +20,8 @@ int main()
     while (1)
     {
         printf("Operation: ");
-        scanf("%i / %i", &dividend, &divisor);
-        if (!divisor)
+        int num_read = scanf("%i / %i", &dividend, &divisor);
+        if (!divisor || 2 != num_read)
             break;
         struct DIV_RESULT div = binary_div(dividend, divisor);
         printf("Quotient = %i\nRemainder = %i\n", div.quotient, div.remainder);
