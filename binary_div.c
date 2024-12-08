@@ -7,93 +7,121 @@
 
 struct DIV_RESULT
 {
-    int quotient, remainder;
+	unsigned quotient;
+	unsigned remainder;
 };
 
-struct DIV_RESULT binary_div(int dividend, int divisor);
+struct DIV_RESULT sdiv(unsigned dividend, unsigned divisor);
+struct DIV_RESULT udiv(unsigned dividend, unsigned divisor);
 
 int main()
 {
-    int dividend, divisor;
-    puts("Enter zero for divisor to end program, For example, Operation: 15/0");
+	int dividend, divisor;
+	puts("Enter zero for divisor to end program, For example, Operation: 15/0");
 
-    while (1)
-    {
-        printf("Operation: ");
-        scanf("%i / %i", &dividend, &divisor);
-        if (!divisor)
-            break;
-        struct DIV_RESULT div = binary_div(dividend, divisor);
-        printf("Quotient = %i\nRemainder = %i\n", div.quotient, div.remainder);
-        /* confirm dividend = (divisor * quotient) + remainder */
-    }
+	while (1)
+	{
+		printf("\nOperation: ");
+		fflush(stdin);
+		scanf("%i / %i", &dividend, &divisor);
+		if (!divisor)
+			break;
+		struct DIV_RESULT div = sdiv(dividend, divisor);
+		printf("\n(SDIV)\nQuotient = %i\nRemainder = %u\n", 
+				div.quotient, div.remainder);
 
-    puts("Exit success!");
-    return 0;
+		div = udiv(dividend, divisor);
+		printf("\n(UDIV)\nQuotient = %u\nRemainder = %u\n", 
+				div.quotient, div.remainder);
+	}
+
+	puts("Exit success!");
+	return 0;
 }
 
-struct DIV_RESULT binary_div(int dividend, int divisor)
+struct DIV_RESULT sdiv(unsigned dividend, unsigned divisor)
 {
-    /* store resulting signs, then convert all to unsigned */
-    int quotient_sign = (divisor < 0 ^ dividend < 0) ? -1 : 1, remainder_sign = 1;
-    if (divisor < 0)
-        divisor *= -1;
-    if (dividend < 0)
-    {
-        remainder_sign = -1;
-        dividend *= -1;
-    }
+	struct DIV_RESULT result = {0, 0};
+	int counter = 0;
+	if(!divisor)
+		return result;
 
-    struct DIV_RESULT res = {0, 0};
-    int quotient = 0;
-    int dividend_shift, divisor_msb = MSB_NUMBER, dividend_msb = MSB_NUMBER; // starting from MSB
-    int temp_divisor = divisor;
-    int temp_dividend = dividend;
-    int new_dividend;
+	/* store resulting signs, then convert all to unsigned */
+	int sign = 0;
+	if (divisor & MSB_MASK)
+	{
+		divisor = ~divisor + 1;
+		sign = !sign;
+	}
+	if (dividend & MSB_MASK)
+	{
+		dividend = ~dividend + 1;
+		sign = !sign;
+	}
 
-    if (!divisor)
-        return res;
-    if (divisor > dividend)
-    {
-        res.remainder = dividend * remainder_sign;
-        return res;
-    }
+	while(dividend >= divisor) 
+	{
+		divisor <<= 1;
+		counter++;
+	}
+	divisor >>= 1;
 
-    while ((temp_divisor & MSB_MASK) == 0)
-    {
-        temp_divisor <<= 1, divisor_msb--;
-    }
-    while ((temp_dividend & MSB_MASK) == 0)
-    {
-        temp_dividend <<= 1,
-            dividend_msb--;
-    }
+	while (counter--)
+	{
+		result.quotient <<= 1;
+		if(dividend >= divisor) 
+		{
+			dividend -= divisor;
+			result.quotient |= 1;
+		}
+		divisor >>= 1;
+	}
 
-    dividend_shift = dividend_msb - divisor_msb;
-    printf("number of dividend shifts = %i\n", dividend_shift);
+	if(sign)
+		result.quotient = ~result.quotient + 1;
+	result.remainder = dividend;
+	return result;
+}
 
-    new_dividend = dividend >> dividend_shift;
-    printf("new_dividend = %i,\tno shift yet\n", new_dividend);
-    while (dividend_shift--)
-    {
-        quotient <<= 1;
-        if (new_dividend >= divisor)
-        {
-            new_dividend -= divisor;
-            quotient |= 1;
-        }
-        new_dividend = (new_dividend << 1) | ((dividend >> dividend_shift) & 1);
-        printf("new_dividend = %i,\tdividend_shift = %i\n", new_dividend, dividend_shift);
-    }
-    quotient <<= 1;
-    if (new_dividend >= divisor)
-    {
-        new_dividend -= divisor;
-        quotient |= 1;
-    }
+struct DIV_RESULT udiv(unsigned dividend, unsigned divisor)
+{
+	struct DIV_RESULT result = {0, 0};
+	int counter;
+	if(!divisor)
+		return result;
 
-    // we have our quotient, then new_dividend is our remainder
-    res.quotient = quotient * quotient_sign;
-    res.remainder = new_dividend * remainder_sign;
-    return res;
+	if (dividend & MSB_MASK)
+	{
+		counter = 1;
+		while(!(MSB_MASK & divisor))
+		{
+			divisor <<= 1;
+			counter++;
+		}
+	}
+
+	else
+	{
+		counter = 0;
+		while(dividend >= divisor) 
+		{
+			divisor <<= 1;
+			counter++;
+		}
+		divisor >>= 1;
+	}
+
+	while (counter--)
+	{
+		result.quotient <<= 1;
+		if(dividend >= divisor) 
+		{
+			dividend -= divisor;
+			result.quotient |= 1;
+		}
+		divisor >>= 1;
+	}
+
+	result.remainder = dividend;
+	return result;
 }

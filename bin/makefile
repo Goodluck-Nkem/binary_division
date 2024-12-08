@@ -1,6 +1,6 @@
 NAME=binary_div
 DIR=${PREFIX}/local/bin
-FLAGS = -fuse-ld=lld -pie -Og -g -std=gnu11
+FLAGS = -fuse-ld=lld -pie -g -std=gnu11
 
 # For PC
 pc:
